@@ -1,0 +1,42 @@
+library ieee;
+use ieee.std_logic_1164.all;
+use ieee.numeric_std.all;
+
+entity chaser is
+    port (
+        i_clk   : in  std_logic;                     -- FPGA_CLK1_50
+        i_rst_n : in  std_logic;                     -- KEY0, actif bas
+        o_led   : out std_logic_vector(7 downto 0)   -- 8 LEDs
+    );
+end entity chaser;
+
+architecture rtl of TP_FPGA is
+    signal r_led : std_logic_vector(7 downto 0) := "00000001";  -- LED0 allumée
+    signal counter : unsigned(22 downto 0) := (others => '0'); -- diviseur d'horloge
+begin
+
+    process(i_clk, i_rst_n)
+    begin
+        if (i_rst_n = '0') then                       -- reset actif bas
+            r_led   <= "00000001";                    -- remet la première LED
+            counter <= (others => '0');
+
+        elsif rising_edge(i_clk) then
+            if counter = 5_000_000 then               -- ralentit la vitesse
+                counter <= (others => '0');
+
+                -- Chaser : décale vers la gauche
+                if r_led = "10000000" then
+                    r_led <= "00000001";              -- retour au début
+                else
+                    r_led <= r_led(6 downto 0) & '1'; -- décale
+                end if;
+
+            else
+                counter <= counter + 1;
+            end if;
+        end if;
+    end process;
+
+    o_led <= r_led;
+end architecture rtl;
