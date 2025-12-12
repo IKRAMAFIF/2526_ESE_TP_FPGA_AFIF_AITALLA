@@ -29,7 +29,7 @@ Dans **File → New Project Wizard**, on définit :
 
 Voici un aperçu du projet dans Quartus :
 
-![Projet VHDL](image1.png)
+![Projet VHDL](images/image1.jpeg)
 
 ---
 
@@ -65,7 +65,7 @@ Dans ce TP, nous assignons :
 
 L’image ci-dessous montre la fenêtre du **Pin Planner** après affectation des deux broches : elle confirme que chaque signal VHDL est correctement relié à sa broche physique sur le Cyclone V.
 
-![image2](image2.png)
+![image2](images/image2.jpeg))
 ---
 
 ##  Programmation de la Carte (Programmer)
@@ -78,8 +78,110 @@ Lors de la détection automatique, Quartus identifie deux composants :
 - `5CSEBA6U23` : le FPGA, que nous devons configurer
 
 L’image ci-dessous montre cette détection ainsi que la sélection du fichier `.sof` et la case *Program/Configure* activée avant l'envoi dans la carte.
-![image3](image3.png)
+![image3](images/image3.jpeg))
+
 Une fois la programmation lancée, une barre verte indique que la configuration a été chargée avec succès dans le FPGA.
+
+---
+---
+
+# Partie 2 — Blinking LED (Horloge, Reset, RTL Viewer)
+
+##  Choix de l’horloge du FPGA
+
+Plusieurs horloges sont disponibles sur la carte DE10-Nano.  
+Dans ce TP, nous utilisons :
+
+- **Signal** : FPGA_CLK1_50  
+- **Fréquence** : 50 MHz  
+- **Broche FPGA** : **PIN_V11**
+
+Cette information est fournie dans le User Manual de la carte DE10-Nano.
+
+![Horloge 50 MHz – PIN_V11](images/clk_pin_v11.png)
+
+Cette horloge est utilisée comme source temporelle pour le clignotement de la LED.
+
+---
+
+##  Blink simple (sans compteur)
+
+Le premier design séquentiel implémente un flip-flop qui inverse son état à chaque front montant de l’horloge.  
+Dans le RTL Viewer de Quartus, ce comportement se traduit par :
+
+- un registre `r_led`  
+- un multiplexeur de reset  
+- une porte NOT en retour  
+- la sortie `o_led` reliée au registre
+
+![RTL Viewer – Blink simple](images/rtl_simple_blink.png)
+
+Voici ensuite le schéma fonctionnel que nous avons dessiné pour illustrer ce comportement :
+
+![Schéma simple blink dessiné](images/schema_simple_blink.png)
+
+Ce schéma confirme que le VHDL a bien été synthétisé en un circuit séquentiel minimal.
+
+---
+
+## Blink avec diviseur de fréquence (compteur)
+
+Le clignotement à 50 MHz est invisible à l’œil humain.  
+Pour obtenir un clignotement perceptible, un **diviseur de fréquence** a été ajouté.
+
+Un compteur incrémente à chaque cycle d’horloge et, lorsqu’il atteint une valeur maximale, il :
+
+1. se réinitialise,  
+2. inverse l’état de `r_led`.
+
+Voici le schéma RTL généré automatiquement par Quartus :  
+
+![RTL Viewer – Blink avec compteur](images/rtl_counter_blink.png)
+
+Et voici notre schéma fonctionnel simplifié du design :
+
+![Schéma compteur + LED dessiné](images/schema_counter_blink.png)
+
+Cette représentation valide que le design VHDL a été correctement traduit en une architecture matérielle séquentielle.
+
+---
+
+##  Importance du signal de reset
+
+Un signal de reset est indispensable pour garantir un état initial connu du circuit.  
+Il assure :
+
+- une mise à zéro du compteur,  
+- une valeur déterministe pour `r_led` au démarrage,  
+- un comportement stable et reproductible.
+
+Sans reset, les registres démarreraient dans un état indéfini.
+
+---
+
+##  Bouton utilisé pour le reset
+
+Le reset est associé au bouton poussoir :
+
+- **Bouton** : KEY0  
+- **Broche FPGA** : **PIN_AH17**
+
+![Pin KEY0 – AH17](images/reset_key0_pin.png)
+
+Ce bouton permet de relancer le compteur et la LED à tout moment.
+
+---
+
+## Signification du suffixe `_n` dans `i_rst_n`
+
+Le suffixe **`_n`** indique que le signal est **actif à l’état bas**.
+
+Ainsi :
+
+- `i_rst_n = '0'` → le circuit est réinitialisé  
+- `i_rst_n = '1'` → fonctionnement normal  
+
+Cette convention est courante en électronique numérique, car les boutons poussoirs et nombreux circuits logiques produisent un niveau bas lorsqu’ils sont activés.
 
 ---
 
