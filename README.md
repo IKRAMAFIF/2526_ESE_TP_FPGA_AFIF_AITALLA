@@ -118,7 +118,7 @@ Dans le RTL Viewer de Quartus, ce comportement se traduit par :
 
 Voici ensuite le schéma fonctionnel que nous avons dessiné pour illustrer ce comportement :
 
-![Schéma simple blink dessiné](images/image10.jpeg)
+![Schéma simple blink dessiné](images/image10.PNG)
 
 Ce schéma confirme que le VHDL a bien été synthétisé en un circuit séquentiel minimal.
 
@@ -140,7 +140,7 @@ Voici le schéma RTL généré automatiquement par Quartus :
 
 Et voici notre schéma fonctionnel simplifié du design :
 
-![Schéma compteur + LED dessiné](images/image9.jpeg)
+![Schéma compteur + LED dessiné](images/image9.PNG)
 
 Cette représentation valide que le design VHDL a été correctement traduit en une architecture matérielle séquentielle.
 
