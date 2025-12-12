@@ -98,7 +98,7 @@ Dans ce TP, nous utilisons :
 
 Cette information est fournie dans le User Manual de la carte DE10-Nano.
 
-![Horloge 50 MHz – PIN_V11](image4.jpeg)
+![Horloge 50 MHz – PIN_V11](images/image4.jpeg)
 
 Cette horloge est utilisée comme source temporelle pour le clignotement de la LED.
 
