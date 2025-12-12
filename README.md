@@ -98,7 +98,7 @@ Dans ce TP, nous utilisons :
 
 Cette information est fournie dans le User Manual de la carte DE10-Nano.
 
-![Horloge 50 MHz – PIN_V11](images/clk_pin_v11.png)
+![Horloge 50 MHz – PIN_V11](image4.jpeg)
 
 Cette horloge est utilisée comme source temporelle pour le clignotement de la LED.
 
@@ -114,11 +114,11 @@ Dans le RTL Viewer de Quartus, ce comportement se traduit par :
 - une porte NOT en retour  
 - la sortie `o_led` reliée au registre
 
-![RTL Viewer – Blink simple](images/rtl_simple_blink.png)
+![RTL Viewer – Blink simple](images/image5.jpeg)
 
 Voici ensuite le schéma fonctionnel que nous avons dessiné pour illustrer ce comportement :
 
-![Schéma simple blink dessiné](images/schema_simple_blink.png)
+![Schéma simple blink dessiné](images/image10.jpeg)
 
 Ce schéma confirme que le VHDL a bien été synthétisé en un circuit séquentiel minimal.
 
@@ -136,11 +136,11 @@ Un compteur incrémente à chaque cycle d’horloge et, lorsqu’il atteint une 
 
 Voici le schéma RTL généré automatiquement par Quartus :  
 
-![RTL Viewer – Blink avec compteur](images/rtl_counter_blink.png)
+![RTL Viewer – Blink avec compteur](images/image6.jpeg)
 
 Et voici notre schéma fonctionnel simplifié du design :
 
-![Schéma compteur + LED dessiné](images/schema_counter_blink.png)
+![Schéma compteur + LED dessiné](images/image9.jpeg)
 
 Cette représentation valide que le design VHDL a été correctement traduit en une architecture matérielle séquentielle.
 
@@ -166,7 +166,7 @@ Le reset est associé au bouton poussoir :
 - **Bouton** : KEY0  
 - **Broche FPGA** : **PIN_AH17**
 
-![Pin KEY0 – AH17](images/reset_key0_pin.png)
+![Pin KEY0 – AH17](images/image7.jpeg)
 
 Ce bouton permet de relancer le compteur et la LED à tout moment.
 
