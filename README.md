@@ -185,3 +185,123 @@ Cette convention est courante en électronique numérique, car les boutons pouss
 
 ---
 
+# Écran magique
+
+## Introduction
+
+L’objectif de ce projet est la réalisation d’un **écran magique numérique** implémenté sur **FPGA**, en s’inspirant du fonctionnement du télécran.  
+L’affichage est assuré via la **sortie HDMI** de la carte **DE10-Nano**, tandis que le déplacement du curseur est contrôlé à l’aide des **deux encodeurs rotatifs** présents sur la carte mezzanine.
+
+Le projet a été développé de manière progressive selon les étapes suivantes :
+
+- Gestion des encodeurs rotatifs  
+- Génération de l’affichage HDMI  
+- Déplacement d’un pixel à l’écran  
+- Mémorisation du tracé  
+- Effacement complet de l’écran  
+
+---
+
+## Gestion des encodeurs
+
+Dans cette partie, nous exploitons les deux signaux **A** et **B** fournis par chaque encodeur rotatif.
+
+### Objectifs
+
+- Incrémenter un registre lorsque l’encodeur tourne dans le sens horaire  
+- Décrémenter ce registre lorsqu’il tourne dans le sens antihoraire  
+
+### Principe de fonctionnement
+
+Le fonctionnement repose sur l’utilisation de **deux bascules D** permettant d’échantillonner le signal **A** sur deux cycles d’horloge consécutifs :
+
+- La première bascule mémorise la valeur courante de **A**  
+- La seconde conserve la valeur précédente  
+
+La comparaison de ces deux valeurs permet de détecter les fronts :
+
+- Passage de `0 → 1` : front montant  
+- Passage de `1 → 0` : front descendant  
+
+Ces transitions sont ensuite utilisées pour déterminer le sens de rotation de l’encodeur et générer les signaux d’incrémentation ou de décrémentation correspondants.
+
+---
+
+## Contrôleur HDMI
+
+Le module `hdmi_controler.vhd` est chargé de la génération des signaux nécessaires à l’affichage HDMI.
+
+Il génère notamment :
+
+- Le signal de synchronisation horizontale (**HSYNC**)  
+- Le signal de synchronisation verticale (**VSYNC**)  
+- Le signal de données actives (**DE**)  
+
+Le contrôleur est configuré pour une résolution de **720 × 480 pixels**.  
+Il fournit également l’adresse du pixel actuellement affiché, ce qui permet de lire la donnée correspondante dans la mémoire vidéo.
+
+---
+
+## Déplacement d’un pixel
+
+La gestion du déplacement du curseur est réalisée dans le fichier principal `telecran.vhd`.
+
+### Architecture
+
+Deux instances du composant `encoder` sont utilisées :
+
+- Une instance pour l’axe **X** (encodeur gauche)  
+- Une instance pour l’axe **Y** (encodeur droit)  
+
+### Fonctionnement
+
+- Chaque encodeur génère des impulsions d’incrémentation ou de décrémentation  
+- Deux compteurs (`s_x_counter` et `s_y_counter`) stockent la position actuelle du curseur  
+- À chaque impulsion détectée, le compteur correspondant est mis à jour  
+- La position obtenue est ensuite utilisée pour écrire dans la mémoire vidéo  
+
+**Test du déplacement du pixel :**  
+*(visualisé à l’aide d’un GIF)*
+
+---
+
+## Mémorisation du tracé et effacement de l’écran
+
+### Mémorisation du tracé
+
+La mémorisation du dessin est assurée par une **mémoire double port** (`dpram.vhd`), utilisée comme **framebuffer**.
+
+#### Écriture – Port A
+
+- La position du curseur (`s_x_counter`, `s_y_counter`) est convertie en une adresse mémoire linéaire  
+- La valeur logique `'1'` est écrite à cette adresse, ce qui correspond à l’allumage d’un pixel blanc  
+
+#### Lecture – Port B
+
+- Le contrôleur HDMI lit en continu la mémoire à l’adresse du pixel en cours d’affichage  
+- Si la valeur lue est `'1'`, le pixel est affiché en blanc, sinon il est affiché en noir  
+
+---
+
+### Effacement de l’écran
+
+L’effacement complet de l’écran est déclenché par un appui sur le **bouton poussoir de l’encodeur gauche**.
+
+Un processus dédié :
+
+- Parcourt l’ensemble des adresses de la mémoire  
+- Écrit la valeur `'0'` dans chaque case  
+- Réinitialise ainsi l’affichage en mettant tous les pixels à l’état noir  
+
+---
+
+## Conclusion
+
+Ce projet a permis de mettre en œuvre un **système d’affichage vidéo complet sur FPGA**, intégrant :
+
+- La gestion d’encodeurs rotatifs  
+- La génération de signaux HDMI  
+- L’utilisation d’une mémoire double port comme framebuffer  
+- Des fonctionnalités avancées telles que la mémorisation du tracé et l’effacement de l’écran  
+
+Le système final reproduit avec succès le comportement d’un **écran magique numérique entièrement fonctionnel**, piloté par des encodeurs matériels et affiché en temps réel sur un écran HDMI.
