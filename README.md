@@ -185,3 +185,267 @@ Cette convention est courante en électronique numérique, car les boutons pouss
 
 ---
 
+# Écran magique
+
+## Introduction
+
+L’objectif de ce projet est la réalisation d’un **écran magique numérique** implémenté sur **FPGA**, en s’inspirant du fonctionnement du télécran.  
+L’affichage est assuré via la **sortie HDMI** de la carte **DE10-Nano**, tandis que le déplacement du curseur est contrôlé à l’aide des **deux encodeurs rotatifs** présents sur la carte mezzanine.
+
+Le projet a été développé de manière progressive selon les étapes suivantes :
+
+- Gestion des encodeurs rotatifs  
+- Génération de l’affichage HDMI  
+- Déplacement d’un pixel à l’écran  
+- Mémorisation du tracé  
+- Effacement complet de l’écran  
+
+---
+
+## Gestion des encodeurs
+
+Dans cette partie, nous exploitons les deux signaux **A** et **B** fournis par chaque encodeur rotatif.
+
+### Objectifs
+
+- Incrémenter un registre lorsque l’encodeur tourne dans le sens horaire  
+- Décrémenter ce registre lorsqu’il tourne dans le sens antihoraire  
+
+### Principe de fonctionnement
+
+Le fonctionnement repose sur l’utilisation de **deux bascules D** permettant d’échantillonner le signal **A** sur deux cycles d’horloge consécutifs :
+
+- La première bascule mémorise la valeur courante de **A**  
+- La seconde conserve la valeur précédente  
+
+La comparaison de ces deux valeurs permet de détecter les fronts :
+
+- Passage de `0 → 1` : front montant  
+- Passage de `1 → 0` : front descendant  
+
+Ces transitions sont ensuite utilisées pour déterminer le sens de rotation de l’encodeur et générer les signaux d’incrémentation ou de décrémentation correspondants.
+
+---
+
+## Contrôleur HDMI
+
+Le module `hdmi_controler.vhd` est chargé de la génération des signaux nécessaires à l’affichage HDMI.
+
+Il génère notamment :
+
+- Le signal de synchronisation horizontale (**HSYNC**)  
+- Le signal de synchronisation verticale (**VSYNC**)  
+- Le signal de données actives (**DE**)  
+
+Le contrôleur est configuré pour une résolution de **720 × 480 pixels**.  
+Il fournit également l’adresse du pixel actuellement affiché, ce qui permet de lire la donnée correspondante dans la mémoire vidéo.
+
+---
+
+## Déplacement d’un pixel
+
+La gestion du déplacement du curseur est réalisée dans le fichier principal `telecran.vhd`.
+
+### Architecture
+
+Deux instances du composant `encoder` sont utilisées :
+
+- Une instance pour l’axe **X** (encodeur gauche)  
+- Une instance pour l’axe **Y** (encodeur droit)  
+
+### Fonctionnement
+
+- Chaque encodeur génère des impulsions d’incrémentation ou de décrémentation  
+- Deux compteurs (`s_x_counter` et `s_y_counter`) stockent la position actuelle du curseur  
+- À chaque impulsion détectée, le compteur correspondant est mis à jour  
+- La position obtenue est ensuite utilisée pour écrire dans la mémoire vidéo  
+
+**Test du déplacement du pixel :**  
+*(visualisé à l’aide d’un GIF)*
+
+---
+
+## Mémorisation du tracé et effacement de l’écran
+
+### Mémorisation du tracé
+
+La mémorisation du dessin est assurée par une **mémoire double port** (`dpram.vhd`), utilisée comme **framebuffer**.
+
+#### Écriture – Port A
+
+- La position du curseur (`s_x_counter`, `s_y_counter`) est convertie en une adresse mémoire linéaire  
+- La valeur logique `'1'` est écrite à cette adresse, ce qui correspond à l’allumage d’un pixel blanc  
+
+#### Lecture – Port B
+
+- Le contrôleur HDMI lit en continu la mémoire à l’adresse du pixel en cours d’affichage  
+- Si la valeur lue est `'1'`, le pixel est affiché en blanc, sinon il est affiché en noir  
+![Pin KEY0 – AH17](images/image11.jfif)
+
+---
+
+### Effacement de l’écran
+
+L’effacement complet de l’écran est déclenché par un appui sur le **bouton poussoir de l’encodeur gauche**.
+
+Un processus dédié :
+
+- Parcourt l’ensemble des adresses de la mémoire  
+- Écrit la valeur `'0'` dans chaque case  
+- Réinitialise ainsi l’affichage en mettant tous les pixels à l’état noir  
+
+---
+
+## Conclusion
+
+Ce projet a permis de mettre en œuvre un **système d’affichage vidéo complet sur FPGA**, intégrant :
+
+- La gestion d’encodeurs rotatifs  
+- La génération de signaux HDMI  
+- L’utilisation d’une mémoire double port comme framebuffer  
+- Des fonctionnalités avancées telles que la mémorisation du tracé et l’effacement de l’écran  
+
+Le système final reproduit avec succès le comportement d’un **écran magique numérique entièrement fonctionnel**, piloté par des encodeurs matériels et affiché en temps réel sur un écran HDMI.
+# Implémentation d’un Soft-Processeur Nios V
+
+## 1. Introduction
+
+Ce compte rendu présente les objectifs, la démarche et les résultats du **Travail Pratique consacré à l’implémentation et à l’exploitation d’un soft-processeur Nios V** sur une carte FPGA **Cyclone V**.  
+Ce TP vise à approfondir la compréhension de l’intégration **hardware/software**, du développement de systèmes embarqués et de l’interfaçage avec des périphériques externes tels que les **LEDs** et l’**accéléromètre ADXL345**.
+
+---
+
+## 2. Partie 1 : Implémentation du Soft-Processeur Nios V
+
+### 2.1. Architecture et outils utilisés
+
+L’environnement de développement repose sur **Quartus Prime** pour la synthèse et la compilation matérielle, ainsi que sur **Platform Designer** pour la conception du système à base de soft-processeur.  
+Le processeur **Nios V** est configuré avec une mémoire *on-chip*, un **JTAG UART** pour la communication et un contrôleur **PIO** permettant le pilotage des LEDs de la carte.
+
+#### Mise en œuvre
+
+1. **Organisation du projet**  
+   Les fichiers sont structurés en plusieurs répertoires (`rtl`, `synt`, `sim`, `sopc`, `soft`) afin d’améliorer la lisibilité et la maintenance du projet.
+
+2. **Création du projet Quartus**  
+   Génération des fichiers `.qpf` et `.qsf` incluant les assignations globales et les contraintes spécifiques à la carte (horloge, reset, LEDs).
+
+3. **Conception sous Platform Designer**
+   - Instanciation du processeur **Nios V/m Microcontroller**
+   - Ajout d’une mémoire **On-Chip Memory** de 128 KB
+   - Intégration d’un **JTAG UART**
+   - Ajout d’un **PIO (Parallel I/O)** de 10 bits pour le contrôle des LEDs
+   - Configuration des interconnexions (horloge, reset, bus de données et d’instructions)
+   - Attribution des adresses mémoire et configuration du vecteur de reset
+   - Génération automatique du système en VHDL
+
+   **Figure 1 : Configuration du PIO dans Platform Designer**  
+   *(capture d’écran à insérer)*
+
+   **Figure 2 : Architecture globale du système Nios V dans Platform Designer**  
+   *(capture d’écran à insérer)*
+
+4. **Intégration VHDL**  
+   Le code HDL généré est intégré dans le fichier VHDL de niveau supérieur du projet Quartus afin d’instancier le soft-processeur sur le FPGA.
+
+---
+
+### 2.2. Développement logiciel
+
+Le développement logiciel est réalisé à l’aide de la chaîne d’outils **Nios V** et de l’IDE **RiscFree**.
+
+#### Mise en œuvre
+
+1. **Génération de la BSP**  
+   Utilisation de l’outil `niosv-bsp` pour créer le *Board Support Package*, nécessaire à la communication entre le code C et le matériel.
+
+2. **Création de l’application**  
+   Génération de la structure de l’application C à l’aide de l’outil `niosv-app`.
+
+3. **IDE RiscFree**  
+   Importation de la BSP et de l’application afin d’éditer, compiler et déboguer le code.
+
+---
+
+### 2.3. Validation initiale
+
+#### 2.3.1. Programme « Hello, world! »
+
+**Objectif**  
+Valider le bon fonctionnement du soft-processeur et de la communication via le **JTAG UART**.
+
+**Implémentation**  
+Un programme C simple affichant le message *« Hello, world! »* à l’aide de la fonction `printf`.
+
+**Observations**  
+Le message s’affiche correctement dans le terminal `juart-terminal` après la programmation et l’exécution du code.
+
+**Figure 3 : Configuration du débogueur dans RiscFree**  
+*(capture d’écran à insérer)*
+
+---
+
+#### 2.3.2. Chenillard lumineux
+
+**Objectif**  
+Tester le contrôle des GPIO et le pilotage des LEDs depuis le logiciel.
+
+**Implémentation**  
+Un programme C réalise un défilement lumineux sur les 10 LEDs à l’aide des macros d’accès au PIO (`IOWR_ALTERA_AVALON_PIO_DATA`) et de fonctions de temporisation (`usleep`).
+
+**Observations**  
+Une séquence lumineuse de type chenillard est visible sur les LEDs de la carte FPGA.
+
+---
+
+## 3. Partie 2 : Projets embarqués avec accéléromètre
+
+Cette partie explore l’intégration d’un capteur externe, l’**accéléromètre ADXL345**, afin de développer des applications interactives.
+
+---
+
+### 3.1. Niveau à bulles
+
+**Objectif**  
+Développer une application affichant l’inclinaison de la carte FPGA sur les LEDs, simulant un niveau à bulles numérique.
+
+#### Mise en œuvre
+
+1. **Extension du système SOPC**  
+   Ajout d’un contrôleur **I2C (Avalon I2C Master)** dans Platform Designer.
+
+2. **Mise à jour hardware/software**  
+   Intégration du contrôleur I2C dans le VHDL de top-niveau, puis régénération et réimportation de la BSP et de l’application.
+
+3. **Communication I2C**
+   - Initialisation du bus I2C via la bibliothèque `altera_avalon_i2c.h`
+   - Lecture du registre `DEVID` pour vérifier la présence de l’ADXL345
+   - Activation du capteur via le registre `POWER_CTL`
+   - Lecture des données d’accélération sur les axes X, Y et Z
+
+4. **Application « Niveau à bulles »**  
+   Les valeurs d’accélération sont interprétées afin de déterminer l’inclinaison de la carte et d’allumer les LEDs correspondantes.
+
+**Figure 4 : Contrôleur I2C Master dans Platform Designer**  
+*(capture d’écran à insérer)*
+
+---
+
+### 3.2. Écran magique interactif
+
+**Objectif**  
+Réutiliser le projet d’écran magique et y ajouter une fonctionnalité d’effacement automatique basée sur l’orientation de la carte.
+
+#### Mise en œuvre
+
+1. **Intégration de l’écran magique**  
+   Intégration du code VHDL et des composants nécessaires à l’affichage de l’écran magique dans le projet FPGA.
+
+2. **Ajout du signal d’effacement**  
+   Mise en place d’un **PIO dédié** permettant au soft-processeur de piloter l’effacement de l’écran.
+
+3. **Logique logicielle d’effacement**  
+   Le programme C lit en continu l’orientation de la carte via l’ADXL345. Lorsque la carte est retournée, le signal d’effacement est activé et l’affichage est réinitialisé.
+
+---
+
