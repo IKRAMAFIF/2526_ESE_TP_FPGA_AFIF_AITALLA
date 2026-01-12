@@ -1,0 +1,30 @@
+﻿# Intel Corporation Software and/or Intellectual Property License File
+# Issued 09 January 2026
+# Upgrade to these products will no longer be available after the Maintenance Expiration  
+# date unless licenses are renewed.  
+# Fixed Node License
+# Primary Machine Name-ikram
+# Primary Machine ID-NIC ID E4B97AEEC4FC
+# Companion ID-N/A
+# Companion ID 2-N/A
+# Product License Summary:
+# 4 Nios® V/m Microcontroller FPGA IP (License: IP-NIOSVM), 1 Seat(s)
+# - Maintenance Expiration of 2026.12
+################################################################################ 
+# FEATURE START 
+# The following is a license file for Nios® V/m Microcontroller Intel® FPGA IP 
+# Number of seat licenses is 1 
+# No license expiration date 
+FEATURE 6AF8_D036 alterad 2026.12 permanent uncounted DD0AA73ADCEF \
+	VENDOR_STRING=2ljMZpIlaiIUTdWyXieG5l HOSTID=e4b97aeec4fc TS_OK \
+	SIGN="0110 48F0 4CE8 708E 9484 652C C577 98DE 83BE DC97 23AA \
+	F9E6 258A B12D 99C3 1746 1C9D B89A 5BF5 9952 6866 6F4D 6934 \
+	1692 23B6 A209 19AA F3AC 1C3A 130B"
+FEATURE 6AF7_D036 alterad 2026.12 permanent uncounted 9E878BA2E5F9 \
+	VENDOR_STRING="iiiiiiiihdLkhIIIIIIIIUPDuiaaaaaaaa11X38DDDDDDDDpjz5cddddddddtmGzGJJJJJJJJbqIh0uuuuuuuugYYWiVVVVVVVVbp0FVHHHHHHHHBUEakffffffffD2FFRkkkkkkkkWL$84" \
+	HOSTID=e4b97aeec4fc TS_OK SIGN="14B1 4C4F 8F17 03EF 4AAD ECFF \
+	7DA8 3827 590F 5BFD CB61 920D CE0A B8EA B0D6 0A68 C7C9 5C85 \
+	AFF5 EA46 50C7 F1F5 DB6B 4DA8 4D58 7039 0874 8C49 815D FE70"
+# FEATURE END 
+################################################################################
+# End of Intel Corporation Software and/or Intellectual Property License File. Issued 01/09/2026

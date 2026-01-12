@@ -1,0 +1,3 @@
+U:/Documents/TP_FPGA/tp_nios_v/soft/bsp/build/Default/CMakeFiles/hal2_bsp.dir
+U:/Documents/TP_FPGA/tp_nios_v/soft/bsp/build/Default/CMakeFiles/edit_cache.dir
+U:/Documents/TP_FPGA/tp_nios_v/soft/bsp/build/Default/CMakeFiles/rebuild_cache.dir

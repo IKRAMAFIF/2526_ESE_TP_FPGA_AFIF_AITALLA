@@ -6,21 +6,49 @@ use nios.nios;
 
 entity tp_nios_v is
     port (
-        i_clk : in std_logic;
-        i_rst_n : in std_logic;
-        o_led : out std_logic_vector(9 downto 0)
+        i_clk   : in  std_logic;
+        i_rst_n : in  std_logic;
+        o_led   : out std_logic_vector(9 downto 0);
+
+        -- ADXL345 / I2C
+        io_i2c_scl : inout std_logic;
+        io_i2c_sda : inout std_logic;
+        o_i2c_ncs  : out   std_logic;
+        o_i2c_sdo  : out   std_logic
     );
 end entity tp_nios_v;
 
 architecture rtl of tp_nios_v is
-    
+
+    signal s_i2c_scl_in : std_logic;
+    signal s_i2c_sda_in : std_logic;
+    signal s_i2c_scl_oe : std_logic;
+    signal s_i2c_sda_oe : std_logic;
+
 begin
 
-nios0 : entity nios.nios
-    port map (
-        clk_clk                          => i_clk,
-        reset_reset_n                    => i_rst_n,
-        pio_0_external_connection_export => o_led
-    );
-    
+    nios0 : entity nios.nios
+        port map (
+            clk_clk                          => i_clk,
+            reset_reset_n                    => i_rst_n,
+            pio_0_external_connection_export => o_led,
+
+            -- I2C (depuis l'export i2c_0_i2c_serial)
+            i2c_0_i2c_serial_scl_in          => s_i2c_scl_in,
+            i2c_0_i2c_serial_sda_in          => s_i2c_sda_in,
+            i2c_0_i2c_serial_scl_oe          => s_i2c_scl_oe,
+            i2c_0_i2c_serial_sda_oe          => s_i2c_sda_oe
+        );
+
+    -- Open-drain : lecture de la ligne + forçage à 0 ou Z
+    s_i2c_scl_in <= io_i2c_scl;
+    io_i2c_scl   <= '0' when s_i2c_scl_oe = '1' else 'Z';
+
+    s_i2c_sda_in <= io_i2c_sda;
+    io_i2c_sda   <= '0' when s_i2c_sda_oe = '1' else 'Z';
+
+    -- ADXL345 en mode I2C + adresse 0x53 (SDO=0)
+    o_i2c_ncs <= '1';
+    o_i2c_sdo <= '0';
+
 end architecture rtl;

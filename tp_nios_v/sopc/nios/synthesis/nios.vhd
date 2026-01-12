@@ -9,12 +9,44 @@ use IEEE.numeric_std.all;
 entity nios is
 	port (
 		clk_clk                          : in  std_logic                    := '0'; --                       clk.clk
+		i2c_0_i2c_serial_sda_in          : in  std_logic                    := '0'; --          i2c_0_i2c_serial.sda_in
+		i2c_0_i2c_serial_scl_in          : in  std_logic                    := '0'; --                          .scl_in
+		i2c_0_i2c_serial_sda_oe          : out std_logic;                           --                          .sda_oe
+		i2c_0_i2c_serial_scl_oe          : out std_logic;                           --                          .scl_oe
 		pio_0_external_connection_export : out std_logic_vector(9 downto 0);        -- pio_0_external_connection.export
 		reset_reset_n                    : in  std_logic                    := '0'  --                     reset.reset_n
 	);
 end entity nios;
 
 architecture rtl of nios is
+	component altera_avalon_i2c is
+		generic (
+			USE_AV_ST       : integer := 0;
+			FIFO_DEPTH      : integer := 4;
+			FIFO_DEPTH_LOG2 : integer := 2
+		);
+		port (
+			clk       : in  std_logic                     := 'X';             -- clk
+			rst_n     : in  std_logic                     := 'X';             -- reset_n
+			intr      : out std_logic;                                        -- irq
+			addr      : in  std_logic_vector(3 downto 0)  := (others => 'X'); -- address
+			read      : in  std_logic                     := 'X';             -- read
+			write     : in  std_logic                     := 'X';             -- write
+			writedata : in  std_logic_vector(31 downto 0) := (others => 'X'); -- writedata
+			readdata  : out std_logic_vector(31 downto 0);                    -- readdata
+			sda_in    : in  std_logic                     := 'X';             -- sda_in
+			scl_in    : in  std_logic                     := 'X';             -- scl_in
+			sda_oe    : out std_logic;                                        -- sda_oe
+			scl_oe    : out std_logic;                                        -- scl_oe
+			src_data  : out std_logic_vector(7 downto 0);                     -- data
+			src_valid : out std_logic;                                        -- valid
+			src_ready : in  std_logic                     := 'X';             -- ready
+			snk_data  : in  std_logic_vector(15 downto 0) := (others => 'X'); -- data
+			snk_valid : in  std_logic                     := 'X';             -- valid
+			snk_ready : out std_logic                                         -- ready
+		);
+	end component altera_avalon_i2c;
+
 	component nios_intel_niosv_m_0 is
 		port (
 			clk                          : in  std_logic                     := 'X';             -- clk
@@ -113,7 +145,7 @@ architecture rtl of nios is
 	component nios_onchip_memory2_0 is
 		port (
 			clk        : in  std_logic                     := 'X';             -- clk
-			address    : in  std_logic_vector(9 downto 0)  := (others => 'X'); -- address
+			address    : in  std_logic_vector(14 downto 0) := (others => 'X'); -- address
 			clken      : in  std_logic                     := 'X';             -- clken
 			chipselect : in  std_logic                     := 'X';             -- chipselect
 			write      : in  std_logic                     := 'X';             -- write
@@ -181,6 +213,11 @@ architecture rtl of nios is
 			intel_niosv_m_0_instruction_manager_rready        : in  std_logic                     := 'X';             -- rready
 			clk_0_clk_clk                                     : in  std_logic                     := 'X';             -- clk
 			intel_niosv_m_0_reset_reset_bridge_in_reset_reset : in  std_logic                     := 'X';             -- reset
+			i2c_0_csr_address                                 : out std_logic_vector(3 downto 0);                     -- address
+			i2c_0_csr_write                                   : out std_logic;                                        -- write
+			i2c_0_csr_read                                    : out std_logic;                                        -- read
+			i2c_0_csr_readdata                                : in  std_logic_vector(31 downto 0) := (others => 'X'); -- readdata
+			i2c_0_csr_writedata                               : out std_logic_vector(31 downto 0);                    -- writedata
 			intel_niosv_m_0_dm_agent_address                  : out std_logic_vector(15 downto 0);                    -- address
 			intel_niosv_m_0_dm_agent_write                    : out std_logic;                                        -- write
 			intel_niosv_m_0_dm_agent_read                     : out std_logic;                                        -- read
@@ -203,7 +240,7 @@ architecture rtl of nios is
 			jtag_uart_0_avalon_jtag_slave_writedata           : out std_logic_vector(31 downto 0);                    -- writedata
 			jtag_uart_0_avalon_jtag_slave_waitrequest         : in  std_logic                     := 'X';             -- waitrequest
 			jtag_uart_0_avalon_jtag_slave_chipselect          : out std_logic;                                        -- chipselect
-			onchip_memory2_0_s1_address                       : out std_logic_vector(9 downto 0);                     -- address
+			onchip_memory2_0_s1_address                       : out std_logic_vector(14 downto 0);                    -- address
 			onchip_memory2_0_s1_write                         : out std_logic;                                        -- write
 			onchip_memory2_0_s1_readdata                      : in  std_logic_vector(31 downto 0) := (others => 'X'); -- readdata
 			onchip_memory2_0_s1_writedata                     : out std_logic_vector(31 downto 0);                    -- writedata
@@ -220,9 +257,11 @@ architecture rtl of nios is
 
 	component nios_irq_mapper is
 		port (
-			clk        : in  std_logic                     := 'X'; -- clk
-			reset      : in  std_logic                     := 'X'; -- reset
-			sender_irq : out std_logic_vector(15 downto 0)         -- irq
+			clk           : in  std_logic                     := 'X'; -- clk
+			reset         : in  std_logic                     := 'X'; -- reset
+			receiver0_irq : in  std_logic                     := 'X'; -- irq
+			receiver1_irq : in  std_logic                     := 'X'; -- irq
+			sender_irq    : out std_logic_vector(15 downto 0)         -- irq
 		);
 	end component nios_irq_mapper;
 
@@ -337,6 +376,11 @@ architecture rtl of nios is
 	signal mm_interconnect_0_jtag_uart_0_avalon_jtag_slave_read            : std_logic;                     -- mm_interconnect_0:jtag_uart_0_avalon_jtag_slave_read -> mm_interconnect_0_jtag_uart_0_avalon_jtag_slave_read:in
 	signal mm_interconnect_0_jtag_uart_0_avalon_jtag_slave_write           : std_logic;                     -- mm_interconnect_0:jtag_uart_0_avalon_jtag_slave_write -> mm_interconnect_0_jtag_uart_0_avalon_jtag_slave_write:in
 	signal mm_interconnect_0_jtag_uart_0_avalon_jtag_slave_writedata       : std_logic_vector(31 downto 0); -- mm_interconnect_0:jtag_uart_0_avalon_jtag_slave_writedata -> jtag_uart_0:av_writedata
+	signal mm_interconnect_0_i2c_0_csr_readdata                            : std_logic_vector(31 downto 0); -- i2c_0:readdata -> mm_interconnect_0:i2c_0_csr_readdata
+	signal mm_interconnect_0_i2c_0_csr_address                             : std_logic_vector(3 downto 0);  -- mm_interconnect_0:i2c_0_csr_address -> i2c_0:addr
+	signal mm_interconnect_0_i2c_0_csr_read                                : std_logic;                     -- mm_interconnect_0:i2c_0_csr_read -> i2c_0:read
+	signal mm_interconnect_0_i2c_0_csr_write                               : std_logic;                     -- mm_interconnect_0:i2c_0_csr_write -> i2c_0:write
+	signal mm_interconnect_0_i2c_0_csr_writedata                           : std_logic_vector(31 downto 0); -- mm_interconnect_0:i2c_0_csr_writedata -> i2c_0:writedata
 	signal mm_interconnect_0_intel_niosv_m_0_dm_agent_readdata             : std_logic_vector(31 downto 0); -- intel_niosv_m_0:dm_agent_readdata -> mm_interconnect_0:intel_niosv_m_0_dm_agent_readdata
 	signal mm_interconnect_0_intel_niosv_m_0_dm_agent_waitrequest          : std_logic;                     -- intel_niosv_m_0:dm_agent_waitrequest -> mm_interconnect_0:intel_niosv_m_0_dm_agent_waitrequest
 	signal mm_interconnect_0_intel_niosv_m_0_dm_agent_address              : std_logic_vector(15 downto 0); -- mm_interconnect_0:intel_niosv_m_0_dm_agent_address -> intel_niosv_m_0:dm_agent_address
@@ -346,7 +390,7 @@ architecture rtl of nios is
 	signal mm_interconnect_0_intel_niosv_m_0_dm_agent_writedata            : std_logic_vector(31 downto 0); -- mm_interconnect_0:intel_niosv_m_0_dm_agent_writedata -> intel_niosv_m_0:dm_agent_writedata
 	signal mm_interconnect_0_onchip_memory2_0_s1_chipselect                : std_logic;                     -- mm_interconnect_0:onchip_memory2_0_s1_chipselect -> onchip_memory2_0:chipselect
 	signal mm_interconnect_0_onchip_memory2_0_s1_readdata                  : std_logic_vector(31 downto 0); -- onchip_memory2_0:readdata -> mm_interconnect_0:onchip_memory2_0_s1_readdata
-	signal mm_interconnect_0_onchip_memory2_0_s1_address                   : std_logic_vector(9 downto 0);  -- mm_interconnect_0:onchip_memory2_0_s1_address -> onchip_memory2_0:address
+	signal mm_interconnect_0_onchip_memory2_0_s1_address                   : std_logic_vector(14 downto 0); -- mm_interconnect_0:onchip_memory2_0_s1_address -> onchip_memory2_0:address
 	signal mm_interconnect_0_onchip_memory2_0_s1_byteenable                : std_logic_vector(3 downto 0);  -- mm_interconnect_0:onchip_memory2_0_s1_byteenable -> onchip_memory2_0:byteenable
 	signal mm_interconnect_0_onchip_memory2_0_s1_write                     : std_logic;                     -- mm_interconnect_0:onchip_memory2_0_s1_write -> onchip_memory2_0:write
 	signal mm_interconnect_0_onchip_memory2_0_s1_writedata                 : std_logic_vector(31 downto 0); -- mm_interconnect_0:onchip_memory2_0_s1_writedata -> onchip_memory2_0:writedata
@@ -364,6 +408,8 @@ architecture rtl of nios is
 	signal mm_interconnect_0_intel_niosv_m_0_timer_sw_agent_readdatavalid  : std_logic;                     -- intel_niosv_m_0:timer_sw_agent_readdatavalid -> mm_interconnect_0:intel_niosv_m_0_timer_sw_agent_readdatavalid
 	signal mm_interconnect_0_intel_niosv_m_0_timer_sw_agent_write          : std_logic;                     -- mm_interconnect_0:intel_niosv_m_0_timer_sw_agent_write -> intel_niosv_m_0:timer_sw_agent_write
 	signal mm_interconnect_0_intel_niosv_m_0_timer_sw_agent_writedata      : std_logic_vector(31 downto 0); -- mm_interconnect_0:intel_niosv_m_0_timer_sw_agent_writedata -> intel_niosv_m_0:timer_sw_agent_writedata
+	signal irq_mapper_receiver0_irq                                        : std_logic;                     -- i2c_0:intr -> irq_mapper:receiver0_irq
+	signal irq_mapper_receiver1_irq                                        : std_logic;                     -- jtag_uart_0:av_irq -> irq_mapper:receiver1_irq
 	signal intel_niosv_m_0_platform_irq_rx_irq                             : std_logic_vector(15 downto 0); -- irq_mapper:sender_irq -> intel_niosv_m_0:platform_irq_rx_irq
 	signal rst_controller_reset_out_reset                                  : std_logic;                     -- rst_controller:reset_out -> [intel_niosv_m_0:ndm_reset_in_reset, intel_niosv_m_0:reset_reset, irq_mapper:reset, mm_interconnect_0:intel_niosv_m_0_reset_reset_bridge_in_reset_reset, onchip_memory2_0:reset, rst_controller_reset_out_reset:in, rst_translator:in_reset]
 	signal rst_controller_reset_out_reset_req                              : std_logic;                     -- rst_controller:reset_req -> [onchip_memory2_0:reset_req, rst_translator:reset_req_in]
@@ -372,9 +418,36 @@ architecture rtl of nios is
 	signal mm_interconnect_0_jtag_uart_0_avalon_jtag_slave_read_ports_inv  : std_logic;                     -- mm_interconnect_0_jtag_uart_0_avalon_jtag_slave_read:inv -> jtag_uart_0:av_read_n
 	signal mm_interconnect_0_jtag_uart_0_avalon_jtag_slave_write_ports_inv : std_logic;                     -- mm_interconnect_0_jtag_uart_0_avalon_jtag_slave_write:inv -> jtag_uart_0:av_write_n
 	signal mm_interconnect_0_pio_0_s1_write_ports_inv                      : std_logic;                     -- mm_interconnect_0_pio_0_s1_write:inv -> pio_0:write_n
-	signal rst_controller_reset_out_reset_ports_inv                        : std_logic;                     -- rst_controller_reset_out_reset:inv -> [jtag_uart_0:rst_n, pio_0:reset_n]
+	signal rst_controller_reset_out_reset_ports_inv                        : std_logic;                     -- rst_controller_reset_out_reset:inv -> [i2c_0:rst_n, jtag_uart_0:rst_n, pio_0:reset_n]
 
 begin
+
+	i2c_0 : component altera_avalon_i2c
+		generic map (
+			USE_AV_ST       => 0,
+			FIFO_DEPTH      => 4,
+			FIFO_DEPTH_LOG2 => 2
+		)
+		port map (
+			clk       => clk_clk,                                  --            clock.clk
+			rst_n     => rst_controller_reset_out_reset_ports_inv, --       reset_sink.reset_n
+			intr      => irq_mapper_receiver0_irq,                 -- interrupt_sender.irq
+			addr      => mm_interconnect_0_i2c_0_csr_address,      --              csr.address
+			read      => mm_interconnect_0_i2c_0_csr_read,         --                 .read
+			write     => mm_interconnect_0_i2c_0_csr_write,        --                 .write
+			writedata => mm_interconnect_0_i2c_0_csr_writedata,    --                 .writedata
+			readdata  => mm_interconnect_0_i2c_0_csr_readdata,     --                 .readdata
+			sda_in    => i2c_0_i2c_serial_sda_in,                  --       i2c_serial.sda_in
+			scl_in    => i2c_0_i2c_serial_scl_in,                  --                 .scl_in
+			sda_oe    => i2c_0_i2c_serial_sda_oe,                  --                 .sda_oe
+			scl_oe    => i2c_0_i2c_serial_scl_oe,                  --                 .scl_oe
+			src_data  => open,                                     --      (terminated)
+			src_valid => open,                                     --      (terminated)
+			src_ready => '0',                                      --      (terminated)
+			snk_data  => "0000000000000000",                       --      (terminated)
+			snk_valid => '0',                                      --      (terminated)
+			snk_ready => open                                      --      (terminated)
+		);
 
 	intel_niosv_m_0 : component nios_intel_niosv_m_0
 		port map (
@@ -466,7 +539,7 @@ begin
 			av_write_n     => mm_interconnect_0_jtag_uart_0_avalon_jtag_slave_write_ports_inv, --                  .write_n
 			av_writedata   => mm_interconnect_0_jtag_uart_0_avalon_jtag_slave_writedata,       --                  .writedata
 			av_waitrequest => mm_interconnect_0_jtag_uart_0_avalon_jtag_slave_waitrequest,     --                  .waitrequest
-			av_irq         => open                                                             --               irq.irq
+			av_irq         => irq_mapper_receiver1_irq                                         --               irq.irq
 		);
 
 	onchip_memory2_0 : component nios_onchip_memory2_0
@@ -538,6 +611,11 @@ begin
 			intel_niosv_m_0_instruction_manager_rready        => intel_niosv_m_0_instruction_manager_rready,                     --                                            .rready
 			clk_0_clk_clk                                     => clk_clk,                                                        --                                   clk_0_clk.clk
 			intel_niosv_m_0_reset_reset_bridge_in_reset_reset => rst_controller_reset_out_reset,                                 -- intel_niosv_m_0_reset_reset_bridge_in_reset.reset
+			i2c_0_csr_address                                 => mm_interconnect_0_i2c_0_csr_address,                            --                                   i2c_0_csr.address
+			i2c_0_csr_write                                   => mm_interconnect_0_i2c_0_csr_write,                              --                                            .write
+			i2c_0_csr_read                                    => mm_interconnect_0_i2c_0_csr_read,                               --                                            .read
+			i2c_0_csr_readdata                                => mm_interconnect_0_i2c_0_csr_readdata,                           --                                            .readdata
+			i2c_0_csr_writedata                               => mm_interconnect_0_i2c_0_csr_writedata,                          --                                            .writedata
 			intel_niosv_m_0_dm_agent_address                  => mm_interconnect_0_intel_niosv_m_0_dm_agent_address,             --                    intel_niosv_m_0_dm_agent.address
 			intel_niosv_m_0_dm_agent_write                    => mm_interconnect_0_intel_niosv_m_0_dm_agent_write,               --                                            .write
 			intel_niosv_m_0_dm_agent_read                     => mm_interconnect_0_intel_niosv_m_0_dm_agent_read,                --                                            .read
@@ -576,9 +654,11 @@ begin
 
 	irq_mapper : component nios_irq_mapper
 		port map (
-			clk        => clk_clk,                             --       clk.clk
-			reset      => rst_controller_reset_out_reset,      -- clk_reset.reset
-			sender_irq => intel_niosv_m_0_platform_irq_rx_irq  --    sender.irq
+			clk           => clk_clk,                             --       clk.clk
+			reset         => rst_controller_reset_out_reset,      -- clk_reset.reset
+			receiver0_irq => irq_mapper_receiver0_irq,            -- receiver0.irq
+			receiver1_irq => irq_mapper_receiver1_irq,            -- receiver1.irq
+			sender_irq    => intel_niosv_m_0_platform_irq_rx_irq  --    sender.irq
 		);
 
 	rst_controller : component altera_reset_controller

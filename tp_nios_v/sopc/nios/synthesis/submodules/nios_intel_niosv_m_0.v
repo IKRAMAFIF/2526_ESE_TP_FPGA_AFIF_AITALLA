@@ -77,8 +77,8 @@ module nios_intel_niosv_m_0 (
 	wire    rst_controller_001_reset_out_reset; // rst_controller_001:reset_out -> [irq_mapper:reset, irq_mapper_001:reset, irq_mapper_002:reset, timer_module:reset]
 
 	nios_intel_niosv_m_0_hart #(
-		.RESET_VECTOR    (32'b00000000000000010000000000000000),
-		.DBG_EXPN_VECTOR (32'b00000000000000000000000000000000),
+		.RESET_VECTOR    (32'b00000000000000000000000000000000),
+		.DBG_EXPN_VECTOR (32'b00000000000000100000000000000000),
 		.HARTID          (32'b00000000000000000000000000000000),
 		.CORE_EXTN       (256),
 		.DEBUG_ENABLED   (1),

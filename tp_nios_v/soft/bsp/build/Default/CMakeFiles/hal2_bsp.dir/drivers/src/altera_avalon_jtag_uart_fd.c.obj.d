@@ -1,0 +1,19 @@
+CMakeFiles/hal2_bsp.dir/drivers/src/altera_avalon_jtag_uart_fd.c.obj: \
+ U:/Documents/TP_FPGA/tp_nios_v/soft/bsp/drivers/src/altera_avalon_jtag_uart_fd.c \
+ U:/Documents/TP_FPGA/tp_nios_v/soft/bsp/HAL/inc/alt_types.h \
+ U:/Documents/TP_FPGA/tp_nios_v/soft/bsp/HAL/inc/sys/alt_dev.h \
+ U:/Documents/TP_FPGA/tp_nios_v/soft/bsp/./system.h \
+ U:/Documents/TP_FPGA/tp_nios_v/soft/bsp/./linker.h \
+ U:/Documents/TP_FPGA/tp_nios_v/soft/bsp/HAL/inc/sys/alt_llist.h \
+ U:/Documents/TP_FPGA/tp_nios_v/soft/bsp/HAL/inc/priv/alt_dev_llist.h \
+ U:/Documents/TP_FPGA/tp_nios_v/soft/bsp/drivers/inc/altera_avalon_jtag_uart.h \
+ C:/PROGRAMS/intelFPGA_lite/24.1std/riscfree/toolchain/riscv32-unknown-elf/lib/gcc/riscv32-unknown-elf/13.2.0/include/stddef.h \
+ U:/Documents/TP_FPGA/tp_nios_v/soft/bsp/HAL/inc/sys/alt_alarm.h \
+ U:/Documents/TP_FPGA/tp_nios_v/soft/bsp/HAL/inc/sys/alt_llist.h \
+ U:/Documents/TP_FPGA/tp_nios_v/soft/bsp/HAL/inc/priv/alt_alarm.h \
+ U:/Documents/TP_FPGA/tp_nios_v/soft/bsp/HAL/inc/sys/alt_warning.h \
+ U:/Documents/TP_FPGA/tp_nios_v/soft/bsp/HAL/inc/os/alt_hooks.h \
+ U:/Documents/TP_FPGA/tp_nios_v/soft/bsp/HAL/inc/os/alt_sem.h \
+ U:/Documents/TP_FPGA/tp_nios_v/soft/bsp/HAL/inc/priv/alt_no_error.h \
+ U:/Documents/TP_FPGA/tp_nios_v/soft/bsp/HAL/inc/os/alt_flag.h \
+ U:/Documents/TP_FPGA/tp_nios_v/soft/bsp/drivers/inc/altera_avalon_jtag_uart_fd.h

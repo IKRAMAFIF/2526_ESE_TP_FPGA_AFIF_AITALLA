@@ -1,0 +1,16 @@
+eclipse.preferences.version=1
+gdb.client.commands=set mem inaccessible-by-default off\r\nset arch riscv\:rv32\r\nset remotetimeout 250
+gdb.client.executable=${eclipse_home}/../toolchain/riscv32-unknown-elf/bin/riscv32-unknown-elf-gdb.exe
+gdb.client.other=
+gdb.qemu.architecture=RISC-V
+gdb.qemu.bit=32
+gdb.qemu.boardName=spike
+gdb.qemu.deviceName=
+gdb.qemu.doDebugInRam=true
+gdb.qemu.doInitialReset=false
+gdb.qemu.doPreRunReset=true
+gdb.qemu.init.other=
+gdb.qemu.preRun.other=
+gdb.server.doStart=true
+gdb.server.executable=${eclipse_home}/../qemu/qemu-system-riscv32.exe
+gdb.server.other=-bios none -S -d unimp,guest_errors
