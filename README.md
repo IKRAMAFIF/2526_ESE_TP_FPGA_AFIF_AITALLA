@@ -306,3 +306,146 @@ Ce projet a permis de mettre en œuvre un **système d’affichage vidéo comple
 - Des fonctionnalités avancées telles que la mémorisation du tracé et l’effacement de l’écran  
 
 Le système final reproduit avec succès le comportement d’un **écran magique numérique entièrement fonctionnel**, piloté par des encodeurs matériels et affiché en temps réel sur un écran HDMI.
+# Implémentation d’un Soft-Processeur Nios V
+
+## 1. Introduction
+
+Ce compte rendu présente les objectifs, la démarche et les résultats du **Travail Pratique consacré à l’implémentation et à l’exploitation d’un soft-processeur Nios V** sur une carte FPGA **Cyclone V**.  
+Ce TP vise à approfondir la compréhension de l’intégration **hardware/software**, du développement de systèmes embarqués et de l’interfaçage avec des périphériques externes tels que les **LEDs** et l’**accéléromètre ADXL345**.
+
+---
+
+## 2. Partie 1 : Implémentation du Soft-Processeur Nios V
+
+### 2.1. Architecture et outils utilisés
+
+L’environnement de développement repose sur **Quartus Prime** pour la synthèse et la compilation matérielle, ainsi que sur **Platform Designer** pour la conception du système à base de soft-processeur.  
+Le processeur **Nios V** est configuré avec une mémoire *on-chip*, un **JTAG UART** pour la communication et un contrôleur **PIO** permettant le pilotage des LEDs de la carte.
+
+#### Mise en œuvre
+
+1. **Organisation du projet**  
+   Les fichiers sont structurés en plusieurs répertoires (`rtl`, `synt`, `sim`, `sopc`, `soft`) afin d’améliorer la lisibilité et la maintenance du projet.
+
+2. **Création du projet Quartus**  
+   Génération des fichiers `.qpf` et `.qsf` incluant les assignations globales et les contraintes spécifiques à la carte (horloge, reset, LEDs).
+
+3. **Conception sous Platform Designer**
+   - Instanciation du processeur **Nios V/m Microcontroller**
+   - Ajout d’une mémoire **On-Chip Memory** de 128 KB
+   - Intégration d’un **JTAG UART**
+   - Ajout d’un **PIO (Parallel I/O)** de 10 bits pour le contrôle des LEDs
+   - Configuration des interconnexions (horloge, reset, bus de données et d’instructions)
+   - Attribution des adresses mémoire et configuration du vecteur de reset
+   - Génération automatique du système en VHDL
+
+   **Figure 1 : Configuration du PIO dans Platform Designer**  
+   *(capture d’écran à insérer)*
+
+   **Figure 2 : Architecture globale du système Nios V dans Platform Designer**  
+   *(capture d’écran à insérer)*
+
+4. **Intégration VHDL**  
+   Le code HDL généré est intégré dans le fichier VHDL de niveau supérieur du projet Quartus afin d’instancier le soft-processeur sur le FPGA.
+
+---
+
+### 2.2. Développement logiciel
+
+Le développement logiciel est réalisé à l’aide de la chaîne d’outils **Nios V** et de l’IDE **RiscFree**.
+
+#### Mise en œuvre
+
+1. **Génération de la BSP**  
+   Utilisation de l’outil `niosv-bsp` pour créer le *Board Support Package*, nécessaire à la communication entre le code C et le matériel.
+
+2. **Création de l’application**  
+   Génération de la structure de l’application C à l’aide de l’outil `niosv-app`.
+
+3. **IDE RiscFree**  
+   Importation de la BSP et de l’application afin d’éditer, compiler et déboguer le code.
+
+---
+
+### 2.3. Validation initiale
+
+#### 2.3.1. Programme « Hello, world! »
+
+**Objectif**  
+Valider le bon fonctionnement du soft-processeur et de la communication via le **JTAG UART**.
+
+**Implémentation**  
+Un programme C simple affichant le message *« Hello, world! »* à l’aide de la fonction `printf`.
+
+**Observations**  
+Le message s’affiche correctement dans le terminal `juart-terminal` après la programmation et l’exécution du code.
+
+**Figure 3 : Configuration du débogueur dans RiscFree**  
+*(capture d’écran à insérer)*
+
+---
+
+#### 2.3.2. Chenillard lumineux
+
+**Objectif**  
+Tester le contrôle des GPIO et le pilotage des LEDs depuis le logiciel.
+
+**Implémentation**  
+Un programme C réalise un défilement lumineux sur les 10 LEDs à l’aide des macros d’accès au PIO (`IOWR_ALTERA_AVALON_PIO_DATA`) et de fonctions de temporisation (`usleep`).
+
+**Observations**  
+Une séquence lumineuse de type chenillard est visible sur les LEDs de la carte FPGA.
+
+---
+
+## 3. Partie 2 : Projets embarqués avec accéléromètre
+
+Cette partie explore l’intégration d’un capteur externe, l’**accéléromètre ADXL345**, afin de développer des applications interactives.
+
+---
+
+### 3.1. Niveau à bulles
+
+**Objectif**  
+Développer une application affichant l’inclinaison de la carte FPGA sur les LEDs, simulant un niveau à bulles numérique.
+
+#### Mise en œuvre
+
+1. **Extension du système SOPC**  
+   Ajout d’un contrôleur **I2C (Avalon I2C Master)** dans Platform Designer.
+
+2. **Mise à jour hardware/software**  
+   Intégration du contrôleur I2C dans le VHDL de top-niveau, puis régénération et réimportation de la BSP et de l’application.
+
+3. **Communication I2C**
+   - Initialisation du bus I2C via la bibliothèque `altera_avalon_i2c.h`
+   - Lecture du registre `DEVID` pour vérifier la présence de l’ADXL345
+   - Activation du capteur via le registre `POWER_CTL`
+   - Lecture des données d’accélération sur les axes X, Y et Z
+
+4. **Application « Niveau à bulles »**  
+   Les valeurs d’accélération sont interprétées afin de déterminer l’inclinaison de la carte et d’allumer les LEDs correspondantes.
+
+**Figure 4 : Contrôleur I2C Master dans Platform Designer**  
+*(capture d’écran à insérer)*
+
+---
+
+### 3.2. Écran magique interactif
+
+**Objectif**  
+Réutiliser le projet d’écran magique et y ajouter une fonctionnalité d’effacement automatique basée sur l’orientation de la carte.
+
+#### Mise en œuvre
+
+1. **Intégration de l’écran magique**  
+   Intégration du code VHDL et des composants nécessaires à l’affichage de l’écran magique dans le projet FPGA.
+
+2. **Ajout du signal d’effacement**  
+   Mise en place d’un **PIO dédié** permettant au soft-processeur de piloter l’effacement de l’écran.
+
+3. **Logique logicielle d’effacement**  
+   Le programme C lit en continu l’orientation de la carte via l’ADXL345. Lorsque la carte est retournée, le signal d’effacement est activé et l’affichage est réinitialisé.
+
+---
+
