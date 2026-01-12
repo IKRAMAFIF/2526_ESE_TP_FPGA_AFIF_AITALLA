@@ -280,6 +280,7 @@ La mémorisation du dessin est assurée par une **mémoire double port** (`dpram
 
 - Le contrôleur HDMI lit en continu la mémoire à l’adresse du pixel en cours d’affichage  
 - Si la valeur lue est `'1'`, le pixel est affiché en blanc, sinon il est affiché en noir  
+![Pin KEY0 – AH17](images/image11.jfif)
 
 ---
 
