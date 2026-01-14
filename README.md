@@ -431,21 +431,3 @@ Développer une application affichant l’inclinaison de la carte FPGA sur les L
 
 ---
 
-### 3.2. Écran magique interactif
-
-**Objectif**  
-Réutiliser le projet d’écran magique et y ajouter une fonctionnalité d’effacement automatique basée sur l’orientation de la carte.
-
-#### Mise en œuvre
-
-1. **Intégration de l’écran magique**  
-   Intégration du code VHDL et des composants nécessaires à l’affichage de l’écran magique dans le projet FPGA.
-
-2. **Ajout du signal d’effacement**  
-   Mise en place d’un **PIO dédié** permettant au soft-processeur de piloter l’effacement de l’écran.
-
-3. **Logique logicielle d’effacement**  
-   Le programme C lit en continu l’orientation de la carte via l’ADXL345. Lorsque la carte est retournée, le signal d’effacement est activé et l’affichage est réinitialisé.
-
----
-
