@@ -339,12 +339,27 @@ Le processeur **Nios V** est configuré avec une mémoire *on-chip*, un **JTAG U
    - Configuration des interconnexions (horloge, reset, bus de données et d’instructions)
    - Attribution des adresses mémoire et configuration du vecteur de reset
    - Génération automatique du système en VHDL
+ Architecture du système intégrant le processeur Nios V, la mémoire On-Chip, le JTAG UART et le contrôleur PIO.
+![Pin KEY0 – AH17](images/image17.jpeg)
 
+Paramétrage de la mémoire interne du système.
+![Pin KEY0 – AH17](images/image18.jpeg)]
 
+Configuration du processeur Nios V/m incluant le vecteur de reset et les options de débogage.
+![Pin KEY0 – AH17](images/image19.jfif)]
 
 4. **Intégration VHDL**  
    Le code HDL généré est intégré dans le fichier VHDL de niveau supérieur du projet Quartus afin d’instancier le soft-processeur sur le FPGA.
 
+   Instanciation du système Nios V dans le fichier VHDL de niveau supérieur.
+   ![Pin KEY0 – AH17](images/image21.jfif)]
+
+   Compilation matérielle du projet sans erreurs bloquantes.
+   ![Pin KEY0 – AH17](images/image20.jfif)]
+   
+   Chargement du bitstream sur la carte Cyclone V.
+    ![Pin KEY0 – AH17](images/image22.jpeg)]
+   
 ---
 
 ### 2.2. Développement logiciel
@@ -377,6 +392,9 @@ Un programme C simple affichant le message *« Hello, world! »* à l’aide de 
 **Observations**  
 Le message s’affiche correctement dans le terminal `juart-terminal` après la programmation et l’exécution du code.
 
+Affichage du message Hello World dans le terminal JTAG UART.
+ ![Pin KEY0 – AH17](images/image23.jfif)]
+
 
 
 ---
@@ -392,6 +410,9 @@ Un programme C réalise un défilement lumineux sur les 10 LEDs à l’aide des 
 **Observations**  
 Une séquence lumineuse de type chenillard est visible sur les LEDs de la carte FPGA.
 
+ Écriture dans le registre du périphérique PIO pour générer un défilement lumineux des LEDs.
+  ![Pin KEY0 – AH17](images/image24.jfif)]
+ 
 ---
 
 ## 3. Partie 2 : Projets embarqués avec accéléromètre
