@@ -200,10 +200,8 @@ Le projet a été développé de manière progressive selon les étapes suivante
 - Génération de l’affichage HDMI  
 - Déplacement d’un pixel à l’écran  
 - Mémorisation du tracé  
-- Effacement complet de l’écran  
-
----
-
+- Effacement complet de l’écran
+  
 ## Gestion des encodeurs
 
 Dans cette partie, nous exploitons les deux signaux **A** et **B** fournis par chaque encodeur rotatif.
@@ -242,6 +240,40 @@ Il génère notamment :
 Le contrôleur est configuré pour une résolution de **720 × 480 pixels**.  
 Il fournit également l’adresse du pixel actuellement affiché, ce qui permet de lire la donnée correspondante dans la mémoire vidéo.
 
+ ## Génération d’une image de test HDMI
+  
+Génération d’une image de test HDMI 
+
+Afin de valider le bon fonctionnement du pipeline HDMI, une image de test a été générée à partir des compteurs de position horizontale et verticale (X et Y).
+
+Les composantes couleur sont directement dérivées de ces compteurs :
+
+* La composante rouge est liée au compteur horizontal 
+* La composante verte est liée au compteur vertical
+* La composante bleue est fixée à zéro
+
+Ce principe permet d’obtenir un dégradé de couleur :
+
+* variation horizontale → rouge
+* variation verticale → vert
+
+Le bus vidéo HDMI est codé sur 24 bits selon le format RGB 8:8:8 :
+
+* bits [23:16] : rouge (R)
+* bits [15:8] : vert (G)
+* bits [7:0] : bleu (B)
+  
+  ![Pin KEY0 – AH17](images/image28.jfif)
+
+L’écran affiche une image composée de zones en dégradé rouge et vert, comme illustré ci-dessus.
+Ce résultat confirme :
+
+* la validité des signaux de synchronisation HDMI (HS, VS, DE)
+* le bon fonctionnement des compteurs de position X et Y
+* la génération correcte des données pixels
+
+Ainsi, le contrôleur HDMI et la chaîne vidéo sont opérationnels.
+
 ---
 
 ## Déplacement d’un pixel
@@ -261,7 +293,6 @@ Deux instances du composant `encoder` sont utilisées :
 - Deux compteurs (`s_x_counter` et `s_y_counter`) stockent la position actuelle du curseur  
 - À chaque impulsion détectée, le compteur correspondant est mis à jour  
 - La position obtenue est ensuite utilisée pour écrire dans la mémoire vidéo  
-
 
 ---
 
