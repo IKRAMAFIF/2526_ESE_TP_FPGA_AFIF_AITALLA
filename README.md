@@ -78,7 +78,9 @@ Lors de la détection automatique, Quartus identifie deux composants :
 - `5CSEBA6U23` : le FPGA, que nous devons configurer
 
 L’image ci-dessous montre cette détection ainsi que la sélection du fichier `.sof` et la case *Program/Configure* activée avant l'envoi dans la carte.
+
 ![image3](images/image3.jpeg))
+
 
 Une fois la programmation lancée, une barre verte indique que la configuration a été chargée avec succès dans le FPGA.
 
@@ -260,7 +262,6 @@ Deux instances du composant `encoder` sont utilisées :
 - À chaque impulsion détectée, le compteur correspondant est mis à jour  
 - La position obtenue est ensuite utilisée pour écrire dans la mémoire vidéo  
 
-**Test du déplacement du pixel :**  
 
 ---
 
@@ -278,7 +279,8 @@ La mémorisation du dessin est assurée par une **mémoire double port** (`dpram
 #### Lecture – Port B
 
 - Le contrôleur HDMI lit en continu la mémoire à l’adresse du pixel en cours d’affichage  
-- Si la valeur lue est `'1'`, le pixel est affiché en blanc, sinon il est affiché en noir  
+- Si la valeur lue est `'1'`, le pixel est affiché en blanc, sinon il est affiché en noir
+- 
 ![Pin KEY0 – AH17](images/image11.jfif)
 
 ---
@@ -359,7 +361,7 @@ Configuration du processeur Nios V/m incluant le vecteur de reset et les options
 
    Instanciation du système Nios V dans le fichier VHDL de niveau supérieur.
    
-   ![Pin KEY0 – AH17](images/image21.jpeg)]
+   ![Pin KEY0 – AH17](images/image21.jpg)]
    
 
    Compilation matérielle du projet sans erreurs bloquantes.
@@ -457,6 +459,20 @@ Développer une application affichant l’inclinaison de la carte FPGA sur les L
    Les valeurs d’accélération sont interprétées afin de déterminer l’inclinaison de la carte et d’allumer les LEDs correspondantes.
 
     ![Pin KEY0 – AH17](images/gif1.gif)]
+   
+  ## Conclusion
+  
+   Ce TP a permis de concevoir et de mettre en œuvre un système embarqué complet sur FPGA Cyclone V, en combinant la conception matérielle sous Platform Designer et le développement logiciel en langage C.
+
+Dans un premier temps, l’intégration du soft-processeur Nios V, de la mémoire On-Chip, du JTAG UART et du contrôleur PIO a permis de valider l’architecture matérielle du système et la communication entre le processeur et les périphériques.
+Le programme Hello World a confirmé le bon fonctionnement de l’exécution logicielle et de l’interface de communication.
+
+Le pilotage des LEDs à l’aide d’un chenillard lumineux a ensuite illustré l’accès logiciel aux registres matériels via le bus Avalon, mettant en évidence l’interfaçage hardware/software.
+
+L’ajout du contrôleur I2C et de l’accéléromètre ADXL345 a permis d’étendre le système vers une application embarquée interactive.
+Le projet de niveau à bulles a démontré l’acquisition de données capteur, leur traitement logiciel et leur restitution visuelle en temps réel.
+
+Ce TP met ainsi en évidence l’intérêt du co-design matériel/logiciel et la flexibilité des FPGA pour la réalisation de systèmes embarqués intégrant processeur, mémoire et périphériques, tout en offrant une forte capacité d’évolution vers des applications complexes.
  
 
 ---
