@@ -339,11 +339,7 @@ Le processeur **Nios V** est configuré avec une mémoire *on-chip*, un **JTAG U
    - Attribution des adresses mémoire et configuration du vecteur de reset
    - Génération automatique du système en VHDL
 
-   **Figure 1 : Configuration du PIO dans Platform Designer**  
-   *(capture d’écran à insérer)*
 
-   **Figure 2 : Architecture globale du système Nios V dans Platform Designer**  
-   *(capture d’écran à insérer)*
 
 4. **Intégration VHDL**  
    Le code HDL généré est intégré dans le fichier VHDL de niveau supérieur du projet Quartus afin d’instancier le soft-processeur sur le FPGA.
@@ -380,8 +376,7 @@ Un programme C simple affichant le message *« Hello, world! »* à l’aide de 
 **Observations**  
 Le message s’affiche correctement dans le terminal `juart-terminal` après la programmation et l’exécution du code.
 
-**Figure 3 : Configuration du débogueur dans RiscFree**  
-*(capture d’écran à insérer)*
+
 
 ---
 
@@ -426,8 +421,7 @@ Développer une application affichant l’inclinaison de la carte FPGA sur les L
 4. **Application « Niveau à bulles »**  
    Les valeurs d’accélération sont interprétées afin de déterminer l’inclinaison de la carte et d’allumer les LEDs correspondantes.
 
-**Figure 4 : Contrôleur I2C Master dans Platform Designer**  
-*(capture d’écran à insérer)*
+
 
 ---
 
