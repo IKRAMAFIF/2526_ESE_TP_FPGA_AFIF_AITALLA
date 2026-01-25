@@ -456,7 +456,8 @@ Développer une application affichant l’inclinaison de la carte FPGA sur les L
 4. **Application « Niveau à bulles »**  
    Les valeurs d’accélération sont interprétées afin de déterminer l’inclinaison de la carte et d’allumer les LEDs correspondantes.
 
- ![Pin KEY0 – AH17](images/gif1.gif)]
+    ![Pin KEY0 – AH17](images/gif1.gif)]
+ 
 
 ---
 
