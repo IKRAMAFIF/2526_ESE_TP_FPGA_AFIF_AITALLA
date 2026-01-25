@@ -306,6 +306,7 @@ Ce projet a permis de mettre en œuvre un **système d’affichage vidéo comple
 - Des fonctionnalités avancées telles que la mémorisation du tracé et l’effacement de l’écran  
 
 Le système final reproduit avec succès le comportement d’un **écran magique numérique entièrement fonctionnel**, piloté par des encodeurs matériels et affiché en temps réel sur un écran HDMI.
+
 # Implémentation d’un Soft-Processeur Nios V
 
 ## 1. Introduction
