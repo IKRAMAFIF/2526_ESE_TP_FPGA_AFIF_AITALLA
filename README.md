@@ -324,7 +324,9 @@ Un processus dédié :
 
 - Parcourt l’ensemble des adresses de la mémoire  
 - Écrit la valeur `'0'` dans chaque case  
-- Réinitialise ainsi l’affichage en mettant tous les pixels à l’état noir  
+- Réinitialise ainsi l’affichage en mettant tous les pixels à l’état noir
+- 
+  ![Pin KEY0 – AH17](images/image29.jpeg)
 
 ---
 
