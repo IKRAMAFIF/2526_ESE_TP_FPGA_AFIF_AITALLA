@@ -460,6 +460,8 @@ Une séquence lumineuse de type chenillard est visible sur les LEDs de la carte 
  Écriture dans le registre du périphérique PIO pour générer un défilement lumineux des LEDs.
  
   ![Pin KEY0 – AH17](images/image24.jfif)]
+  
+  ![Pin KEY0 – AH17](images/gif2.gif)]
  
 ---
 
